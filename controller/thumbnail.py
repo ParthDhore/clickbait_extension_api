@@ -1,10 +1,8 @@
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 import cv2
 import requests
 from io import BytesIO
-import time
 
 def extract_features(image):
     features=[]
@@ -26,7 +24,6 @@ def check_thumbnail(model, thumbnail_id, output):
 
     features=extract_features(thumbnail_id)
 
-    pr_start=time.time()
     op=model.predict(features)
     output['thumbnail_a']=op[0][0]
     # return op[0][0]

@@ -1,7 +1,4 @@
-import numpy as np
 from transformers import AutoTokenizer
-from transformers import TFAutoModelForSequenceClassification
-import time
 from controller.cleantext import clean_text
 
 def titlecheck(model, title, output):

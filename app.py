@@ -5,12 +5,12 @@ from controller.comment import commentcheck
 from controller.thumbnail import check_thumbnail
 import pickle
 import numpy as np
-import time
 from transformers import TFAutoModelForSequenceClassification
 import tensorflow as tf
 import threading
-import queue
+import logging
 
+# Single Threaded
 # start=time.time()
 # title_model=TFAutoModelForSequenceClassification.from_pretrained("titlemodel")
 # comment_model=TFAutoModelForSequenceClassification.from_pretrained("commentmodel")
@@ -40,21 +40,20 @@ threads=[
     threading.Thread(target=load_thumbnailmodel)
 ]
 
-start=time.time()
 for thread in threads:
     thread.start()
 
 for thread in threads:
     thread.join()
 
-end=time.time()
-print('threading: {}'.format(end-start))
+print('Setup done....')
 
 app=Flask(__name__)
 
 @app.route('/check/<video_id>',methods=['GET'])
 def check_clickbait(video_id):
-    api_start=time.time()
+    app.logger.info('Youtube API start....')
+    print('Youtube API start....')
     api_key="AIzaSyCCIcLVZQbpOvY7dci6KwNs81IisOm6hOo"
     youtube = build('youtube','v3', developerKey=api_key)
     video_response=youtube.videos().list(part='snippet,statistics',id=video_id).execute()
@@ -87,9 +86,9 @@ def check_clickbait(video_id):
     for i in comments:
         com+=i
 
-    api_end=time.time()
-    print("api: {}".format(api_end-api_start))
-
+    app.logger.info('Youtube API finish....')
+    print('Youtube API exit....')
+    # Single Threaded
     # title_start=time.time()
     # tn=titlecheck(title_model, title)
     # title_end=time.time()
@@ -111,24 +110,18 @@ def check_clickbait(video_id):
         threading.Thread(target=check_thumbnail, args=(thumbnail_model, thumbnail, output))
     ]
 
-    start=time.time()
     for thread in predict_threads:
         thread.start()
 
     for thread in predict_threads:
         thread.join()
 
-    end=time.time()
-    print('threading: {}'.format(end-start))
 
-    ensemble_start=time.time()
     with open('ensemble_model.pkl', 'rb') as file:
         ensemble_model = pickle.load(file)
 
     inp=np.array([output['title_a'],output['title_b'],output['comment_a'],output['comment_b'],output['thumbnail_a']]).reshape(-1,5)
     flag=ensemble_model.predict(inp)
-    ensemble_end=time.time()
-    print("ensemble: {}".format(ensemble_end-ensemble_start))
 
     ans={
         "nonclickbait/clickbait":str(flag[0]),
@@ -142,4 +135,4 @@ def check_clickbait(video_id):
 
 
 if __name__=="__main__":
-    app.run(debug=False)
+    app.run(debug=False, threaded=True)
