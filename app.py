@@ -24,15 +24,15 @@ thumbnail_model=None
 
 def load_titlemodel():
     global title_model
-    title_model=TFAutoModelForSequenceClassification.from_pretrained("titlemodel")
+    title_model=TFAutoModelForSequenceClassification.from_pretrained("title_model")
 
 def load_commentmodel():
     global comment_model
-    comment_model=TFAutoModelForSequenceClassification.from_pretrained("commentmodel")
+    comment_model=TFAutoModelForSequenceClassification.from_pretrained("comment_model")
 
 def load_thumbnailmodel():   
     global thumbnail_model
-    thumbnail_model=tf.keras.models.load_model('thumbnailmodel')
+    thumbnail_model=tf.keras.models.load_model('thumbnail_model')
 
 threads=[
     threading.Thread(target=load_titlemodel),
